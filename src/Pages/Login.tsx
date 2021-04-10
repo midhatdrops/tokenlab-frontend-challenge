@@ -1,10 +1,12 @@
-import React from 'react';
-import { Box, Container, Grid } from '@material-ui/core';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { useForm, Controller } from 'react-hook-form';
-import TextField from '@material-ui/core/TextField';
+import { Box, Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import React, { useState } from 'react';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Header } from '../components/Header';
+import { loginHandler } from '../handlers/loginHandler';
+import { useHistory } from 'react-router';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     formInput: {
       marginTop: '1rem',
+      textAlign: 'center',
     },
   })
 );
@@ -35,8 +38,17 @@ interface ILoginForm {
 }
 
 export const LoginForm = () => {
+  const history = useHistory();
   const { control, handleSubmit } = useForm<ILoginForm>();
-  const onSubmit = (data: ILoginForm) => console.log(data);
+  const onSubmit: SubmitHandler<ILoginForm> = async (data: ILoginForm, e) => {
+    e?.preventDefault();
+    const { email, password } = data;
+    const validate = await loginHandler(email, password);
+    if (validate === false) {
+      return history.push('/');
+    }
+    return history.push('/dashboard');
+  };
   const classes = useStyles();
   return (
     <Box width="100vw" height="100vh">
@@ -51,7 +63,11 @@ export const LoginForm = () => {
         alignItems="center"
         justifyContent="center"
       >
-        <form onSubmit={handleSubmit(onSubmit)} className={classes.formControl}>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className={classes.formControl}
+          method="POST"
+        >
           <Controller
             name="email"
             control={control}
@@ -73,6 +89,7 @@ export const LoginForm = () => {
                 {...field}
                 label="Password"
                 className={classes.formInput}
+                type="password"
               />
             )}
           />
