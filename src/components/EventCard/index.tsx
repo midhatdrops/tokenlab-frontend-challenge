@@ -1,3 +1,5 @@
+/* eslint-disable react/prop-types */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
   Card,
@@ -11,6 +13,7 @@ import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 import React from 'react';
 import { IndividualCard } from '../EventCard/card';
+import { Event } from '../../handlers/eventsHandler';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,11 +56,19 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export const EventCard = () => {
+export const EventCard: React.FC<Event> = ({
+  description,
+  finishTime,
+  initTime,
+}) => {
   const classes = useStyles();
   return (
     <Grid item sm={12} md={6} lg={4} className={classes.cardGrid}>
-      <IndividualCard />
+      <IndividualCard
+        description={description}
+        initTime={initTime}
+        finishTime={finishTime}
+      />
     </Grid>
   );
 };

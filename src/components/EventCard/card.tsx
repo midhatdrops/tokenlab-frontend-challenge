@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 
 import {
@@ -11,6 +12,7 @@ import {
 } from '@material-ui/core';
 import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
+import { Event } from '../../handlers/eventsHandler';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,17 +55,28 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export const IndividualCard = () => {
+export const IndividualCard: React.FC<Event> = ({
+  description,
+  finishTime,
+  initTime,
+}) => {
+  const treatedInitTime = new Date(initTime);
+  const treatedFinishTime = new Date(finishTime);
   const classes = useStyles();
   return (
     <Card className={classes.Card}>
-      <CardHeader title="Dia 01" />
+      <CardHeader title={`Dia ${treatedInitTime.toString().split(' ')[2]}`} />
       <CardContent className={classes.CardContent}>
         <Typography className={classes.subTitle} align="center">
-          Descrição
+          {description}
         </Typography>
         <Typography variant="body1" align="center" className={classes.typo}>
-          Horário de Início / Horário de Término
+          {`${treatedInitTime.getHours()}:${treatedInitTime.getMinutes()} / 
+          ${treatedFinishTime.getHours()}:${
+            treatedFinishTime.getMinutes() === 0
+              ? '00'
+              : treatedFinishTime.getMinutes()
+          } `}
         </Typography>
       </CardContent>
       <CardActions className={classes.cardActions}>

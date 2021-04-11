@@ -1,5 +1,6 @@
 import { useHistory } from 'react-router-dom';
 
+const secret = process.env.AUTH_SECRET;
 export class TokenHandler {
   static storeToken(token: string) {
     window.localStorage.setItem('token', token);
@@ -8,12 +9,11 @@ export class TokenHandler {
     return window.localStorage.getItem('token');
   }
 
-  static tokenValidation(historyParam: typeof useHistory) {
-    const history = historyParam();
+  static tokenValidation() {
     const token = this.getToken();
     if (!token) {
       alert('Must Login First!');
-      history.push('/');
+      return false;
     }
     return true;
   }
