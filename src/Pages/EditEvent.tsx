@@ -50,6 +50,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface IEditEventForm {
   initDate: Date;
+  month: number;
   initTime: Date;
   finishDate: Date;
   finishTime: Date;
@@ -62,6 +63,7 @@ interface Event {
   description: string;
   initTime: Date;
   finishTime: Date;
+  month: number;
 }
 
 const schema = yup.object().shape({
@@ -120,6 +122,7 @@ export const EditEventForm = () => {
         id: response.id,
         initDate: response.initTime,
         initTime: response.initTime,
+        month: response.month,
       });
     });
   }, [reset]);
@@ -130,6 +133,7 @@ export const EditEventForm = () => {
   ) => {
     e?.preventDefault();
     data.id = id;
+    const month = data.initDate.getMonth() + 1;
     const initDate = new Date(data.initDate).toISOString().split('T')[0];
     const initTime = new Date(data.initTime).toISOString().split('T')[1];
     const DateTime = new Date(`${initDate} ${initTime}`);
@@ -155,6 +159,7 @@ export const EditEventForm = () => {
           description: data.description,
           initTime: DateTime.toISOString(),
           finishTime: FinishTime.toISOString(),
+          month,
         },
         {
           headers: {

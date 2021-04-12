@@ -77,7 +77,6 @@ export const CreateEventForm = () => {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<ICreateEventForm>({
     resolver: yupResolver(schema),
   });
@@ -86,7 +85,9 @@ export const CreateEventForm = () => {
     e
   ) => {
     e?.preventDefault();
+    console.log('Working');
     const token = TokenHandler.getToken();
+    const month = data.initDate.getMonth();
     const controlInitDate = data.initDate.toISOString().split('T')[0];
     const controlInitTime = data.initTime.toISOString().split('T')[1];
     const InitDateTime = new Date(`${controlInitDate} ${controlInitTime}`);
@@ -116,6 +117,7 @@ export const CreateEventForm = () => {
           description: data.description,
           initTime: InitDateTime.toISOString(),
           finishTime: InitFinishTime.toISOString(),
+          month,
         },
         {
           headers: {

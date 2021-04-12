@@ -100,7 +100,7 @@ export const DeleteEventForm = () => {
     e?.preventDefault();
     const token = TokenHandler.getToken();
     const responseStatus = await axios
-      .delete(`http://localhost:3010/api/events/${data.id}`, {
+      .delete(`http://localhost:3010/api/events/${id}`, {
         headers: {
           authorization: `Bearer ${token}`,
         },
