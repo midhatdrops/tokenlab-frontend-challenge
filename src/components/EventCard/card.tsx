@@ -121,7 +121,12 @@ export const IndividualCard: React.FC<Event> = ({
     >
       <Card className={classes.Card}>
         <CardHeader
-          title={`Dia ${treatedInitTime.toString().split(' ')[2]}`}
+          title={`Dia ${treatedInitTime.toString().split(' ')[2]} ${
+            treatedFinishTime.toString().split(' ')[2] ===
+            treatedInitTime.toString().split(' ')[2]
+              ? ''
+              : '-> ' + treatedFinishTime.toString().split(' ')[2]
+          }`}
           avatar={<EventIcon />}
           className={classes.CardHead}
         />
