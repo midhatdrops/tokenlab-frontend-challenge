@@ -60,6 +60,7 @@ export const EventCard: React.FC<Event> = ({
   description,
   finishTime,
   initTime,
+  id,
 }) => {
   const classes = useStyles();
   return (
@@ -68,6 +69,7 @@ export const EventCard: React.FC<Event> = ({
         description={description}
         initTime={initTime}
         finishTime={finishTime}
+        id={id}
       />
     </Grid>
   );

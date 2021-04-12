@@ -7,6 +7,8 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Header } from '../components/Header';
 import { registerHandler } from '../handlers/registerHandler';
 import { useHistory } from 'react-router';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,9 +41,32 @@ interface IRegisterForm {
   confirmPassword: string;
 }
 
+const schema = yup.object().shape({
+  fullName: yup
+    .string()
+    .required()
+    .min(10),
+  email: yup
+    .string()
+    .required()
+    .email(),
+  password: yup
+    .string()
+    .required()
+    .min(2),
+  confirmPassword: yup
+    .string()
+    .required()
+    .min(2),
+});
+
 export const RegisterForm = () => {
   const history = useHistory();
-  const { control, handleSubmit } = useForm<IRegisterForm>();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IRegisterForm>({ resolver: yupResolver(schema) });
   const onSubmit: SubmitHandler<IRegisterForm> = async (
     data: IRegisterForm,
     e
@@ -88,6 +113,8 @@ export const RegisterForm = () => {
                 {...field}
                 label="Full Name"
                 className={classes.formInput}
+                error={errors.fullName?.message ? true : false}
+                helperText={errors.fullName?.message}
               />
             )}
           />
@@ -100,6 +127,8 @@ export const RegisterForm = () => {
                 {...field}
                 label="Email"
                 className={classes.formInput}
+                error={errors.email?.message ? true : false}
+                helperText={errors.email?.message}
               />
             )}
           />
@@ -112,6 +141,8 @@ export const RegisterForm = () => {
                 {...field}
                 label="Password"
                 className={classes.formInput}
+                error={errors.password?.message ? true : false}
+                helperText={errors.password?.message}
                 type="password"
               />
             )}
@@ -125,6 +156,8 @@ export const RegisterForm = () => {
                 {...field}
                 label="Confirm Password"
                 className={classes.formInput}
+                error={errors.confirmPassword?.message ? true : false}
+                helperText={errors.confirmPassword?.message}
                 type="password"
               />
             )}

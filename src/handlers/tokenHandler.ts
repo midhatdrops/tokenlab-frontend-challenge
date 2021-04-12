@@ -17,4 +17,8 @@ export class TokenHandler {
     }
     return true;
   }
+
+  static removeToken() {
+    window.localStorage.removeItem('token');
+  }
 }

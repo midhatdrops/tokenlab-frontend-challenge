@@ -9,7 +9,7 @@ export const Homepage = () => {
   useEffect(() => {
     setTimeout(() => {
       setLoadingState(LoadingState.LOADED);
-    }, 2500);
+    }, 1200);
   });
   return (
     <>

@@ -15,12 +15,14 @@ import { months } from '../utils/dateConverter';
 
 import { EventsHandler, Event } from '../handlers/eventsHandler';
 import axios from 'axios';
+import { Footer } from '../components/Footer';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
       backgroundColor: theme.palette.background.default,
       overflowX: 'hidden',
+      marginBottom: '3rem',
     },
     header: {
       width: '100%',
@@ -58,7 +60,8 @@ export const DashBoard = () => {
   const [loadingState, setLoadingState] = useState(LoadingState.LOADING);
   const [events, setEvents] = useState<Event[]>();
   const BASE_URL = 'http://localhost:3010';
-  const month = new Date().getMonth().valueOf();
+  const actualMonth = new Date().getMonth().valueOf();
+  const exibMonth = months[actualMonth].toString();
   const classes = useStyles();
   async function eventHandler() {
     const newEvents = await axios
@@ -70,14 +73,13 @@ export const DashBoard = () => {
       .then((res) => res.data);
     return newEvents;
   }
-  //prettier-ignore
   useEffect(() => {
     setTimeout(async () => {
-      const newEvents = await eventHandler()
-      setEvents(newEvents)
-      setLoadingState(LoadingState.LOADED)
-    },1000)
-  },[]);
+      const newEvents = await eventHandler();
+      setEvents(newEvents);
+      setLoadingState(LoadingState.LOADED);
+    }, 1000);
+  }, []);
   return (
     <>
       {TokenHandler.tokenValidation() ? true : useHistory().push('/')}
@@ -88,13 +90,11 @@ export const DashBoard = () => {
             <Header />
             <Box width="100vw" height="calc(100vh-45px)" overflow="hidden">
               <Box className={classes.header} display="flex">
-                <Typography className={classes.month}>
-                  {months[month]}
-                </Typography>
+                <Typography className={classes.month}>{exibMonth}</Typography>
                 <Box display="flex" flexGrow="1" />
                 <Link
                   component={Button}
-                  to="/createEvent"
+                  to="/events/create"
                   className={classes.Button}
                 >
                   +
@@ -106,11 +106,14 @@ export const DashBoard = () => {
                     description={e.description}
                     initTime={e.initTime}
                     finishTime={e.finishTime}
+                    id={e.id}
+                    key={e.id}
                   />
                 ))}
               </Grid>
             </Box>
           </div>
+          <Footer />
         </>
       )}
     </>

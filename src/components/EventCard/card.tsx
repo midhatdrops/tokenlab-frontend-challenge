@@ -59,6 +59,7 @@ export const IndividualCard: React.FC<Event> = ({
   description,
   finishTime,
   initTime,
+  id,
 }) => {
   const treatedInitTime = new Date(initTime);
   const treatedFinishTime = new Date(finishTime);
@@ -80,10 +81,18 @@ export const IndividualCard: React.FC<Event> = ({
         </Typography>
       </CardContent>
       <CardActions className={classes.cardActions}>
-        <Link component={Button} className={classes.Button} to="/editEvents">
+        <Link
+          component={Button}
+          className={classes.Button}
+          to={`/events/edit?id=${id}`}
+        >
           Editar
         </Link>
-        <Link component={Button} className={classes.Button} to="/excludeEvents">
+        <Link
+          component={Button}
+          className={classes.Button}
+          to={`/events/delete?id=${id}`}
+        >
           Excluir
         </Link>
       </CardActions>

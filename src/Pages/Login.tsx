@@ -4,10 +4,12 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import React, { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { Header } from '../components/Header';
 import { loginHandler } from '../handlers/loginHandler';
 import { useHistory } from 'react-router';
 import { TokenHandler } from '../handlers/tokenHandler';
+import * as yup from 'yup';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,9 +40,24 @@ interface ILoginForm {
   password: string;
 }
 
+const schema = yup.object().shape({
+  email: yup
+    .string()
+    .required('O campo email é obrigatório!')
+    .email('Por favor insira um email válido!'),
+  password: yup
+    .string()
+    .required('O campo password é obrigatório!')
+    .min(2),
+});
+
 export const LoginForm = () => {
   const history = useHistory();
-  const { control, handleSubmit } = useForm<ILoginForm>();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ILoginForm>({ resolver: yupResolver(schema) });
   const onSubmit: SubmitHandler<ILoginForm> = async (data: ILoginForm, e) => {
     e?.preventDefault();
     const { email, password } = data;
@@ -53,7 +70,6 @@ export const LoginForm = () => {
   const classes = useStyles();
   return (
     <>
-      {TokenHandler.tokenValidation() ? useHistory().push('/dashboard') : false}
       <Box width="100vw" height="100vh">
         <Grid container className={classes.root}>
           <Header />
@@ -75,11 +91,14 @@ export const LoginForm = () => {
               name="email"
               control={control}
               defaultValue=""
+              rules={{}}
               render={({ field }) => (
                 <TextField
                   {...field}
+                  error={errors.email?.message ? true : false}
                   label="Email"
                   className={classes.formInput}
+                  helperText={errors.email?.message}
                 />
               )}
             />
@@ -93,6 +112,8 @@ export const LoginForm = () => {
                   label="Password"
                   className={classes.formInput}
                   type="password"
+                  helperText={errors.password?.message}
+                  error={errors.password?.message ? true : false}
                 />
               )}
             />

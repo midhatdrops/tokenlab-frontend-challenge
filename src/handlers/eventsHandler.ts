@@ -7,6 +7,7 @@ export interface Event {
   description: string;
   initTime: Date;
   finishTime: Date;
+  id: number;
 }
 
 export class EventsHandler {
