@@ -5,6 +5,7 @@ import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { TokenHandler } from '../handlers/tokenHandler';
 import { useHistory } from 'react-router-dom';
 import { Header } from '../components/Header';
+import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
 
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
@@ -48,6 +49,9 @@ const useStyles = makeStyles((theme: Theme) =>
       '&:hover': {
         cursor: 'pointer',
       },
+    },
+    calendar: {
+      marginLeft: '0.3rem',
     },
     typo: {
       marginTop: '1rem',
@@ -105,6 +109,7 @@ export const DashBoard = () => {
             <Header />
             <Box width="100vw" height="calc(100vh-45px)" overflow="hidden">
               <Box className={classes.header} display="flex">
+                <CalendarTodayIcon className={classes.calendar} />
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"

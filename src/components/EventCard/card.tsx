@@ -1,5 +1,8 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
+import CreateIcon from '@material-ui/icons/Create';
+import DeleteIcon from '@material-ui/icons/Delete';
+import EventIcon from '@material-ui/icons/Event';
 
 import {
   Button,
@@ -32,25 +35,63 @@ const useStyles = makeStyles((theme: Theme) =>
     Card: {
       width: '90%',
       marginTop: '1rem',
+      webkitBoxShadow: '8px 13px 5px 0px rgba(0,0,0,0.51)',
+      mozBoxShadow: '8px 13px 5px 0px rgba(0,0,0,0.51)',
+      boxShadow: '8px 13px 5px 0px rgba(0,0,0,0.51)',
+    },
+    CardHead: {
+      fontSize: '1rem',
     },
     CardContent: {
       width: '100%',
       display: 'flex',
+      fontSize: '1rem',
+      fontFamily: 'Oswald',
+      fontWeight: 300,
       flexDirection: 'column',
       alignItems: 'center',
+      letterSpacing: '0.2rem',
     },
     typo: {
+      width: '80%',
+      border: '1px solid #fff',
+      borderRadius: '4px',
       marginTop: '1rem',
+      letterSpacing: '0.1rem',
+      transition: '0.7s',
+      '&:hover': {
+        opacity: '0.6',
+      },
     },
     subTitle: {
+      width: '80%',
       fontWeight: 300,
       fontSize: '0.8rem',
+      marginTop: '0.5rem',
+      marginBottom: '0.5rem',
+      letterSpacing: '0.1rem',
+      border: '1px solid #fff',
+      borderRadius: '4px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      transition: '0.5s',
+      '&:hover': {
+        border: `1px solid ${theme.palette.secondary.dark}`,
+      },
     },
     cardActions: {
       width: '100%',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    link: {
+      color: '#fff',
+      textDecoration: 'none',
+      '&visited': {
+        color: '#fff',
+      },
     },
   })
 );
@@ -66,11 +107,17 @@ export const IndividualCard: React.FC<Event> = ({
   const classes = useStyles();
   return (
     <Card className={classes.Card}>
-      <CardHeader title={`Dia ${treatedInitTime.toString().split(' ')[2]}`} />
+      <CardHeader
+        title={`Dia ${treatedInitTime.toString().split(' ')[2]}`}
+        avatar={<EventIcon />}
+        className={classes.CardHead}
+      />
       <CardContent className={classes.CardContent}>
-        <Typography className={classes.subTitle} align="center">
+        <i>Descrição:</i>
+        <Typography className={classes.subTitle} align="justify">
           {description}
         </Typography>
+        <i>Início / Fim</i>
         <Typography variant="body1" align="center" className={classes.typo}>
           {`${treatedInitTime.getHours()}:${treatedInitTime.getMinutes()} / 
           ${treatedFinishTime.getHours()}:${
@@ -81,19 +128,15 @@ export const IndividualCard: React.FC<Event> = ({
         </Typography>
       </CardContent>
       <CardActions className={classes.cardActions}>
-        <Link
-          component={Button}
-          className={classes.Button}
-          to={`/events/edit?id=${id}`}
-        >
-          Editar
+        <Link to={`/events/edit?id=${id}`} className={classes.link}>
+          <Button variant="outlined" startIcon={<CreateIcon />}>
+            Editar
+          </Button>
         </Link>
-        <Link
-          component={Button}
-          className={classes.Button}
-          to={`/events/delete?id=${id}`}
-        >
-          Excluir
+        <Link to={`/events/delete?id=${id}`} className={classes.link}>
+          <Button startIcon={<DeleteIcon />} variant="outlined">
+            Excluir
+          </Button>
         </Link>
       </CardActions>
     </Card>

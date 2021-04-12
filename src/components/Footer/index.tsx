@@ -38,7 +38,7 @@ export const Footer = () => {
 
   return (
     <Box className={classes.root}>
-      <Typography className={classes.typo}>Bruno R.N</Typography>
+      <Typography className={classes.typo}>🖥️ Bruno R.N</Typography>
       <Box flexGrow={1} />{' '}
       <Link to="/logout" className={classes.link}>
         Logout
