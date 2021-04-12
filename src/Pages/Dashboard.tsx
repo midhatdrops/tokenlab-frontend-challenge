@@ -1,28 +1,19 @@
 /* eslint-disable react/jsx-key */
-import React, { useEffect, useState } from 'react';
-import { Container, Box, Grid, Typography, Button } from '@material-ui/core';
-import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
-import { TokenHandler } from '../handlers/tokenHandler';
-import { useHistory } from 'react-router-dom';
-import { Header } from '../components/Header';
-import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
-
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import InputLabel from '@material-ui/core/InputLabel';
+import { Box, Button, Grid } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
-
-import { Link } from 'react-router-dom';
-import { LoadingState } from '../utils/enumLoading';
-
+import Select from '@material-ui/core/Select';
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import CalendarTodayIcon from '@material-ui/icons/CalendarToday';
+import React, { useEffect, useState } from 'react';
+import { Link, useHistory } from 'react-router-dom';
 import { EventCard } from '../components/EventCard';
-import { Loading } from '../components/Loading';
-
-import { months } from '../utils/dateConverter';
-
-import { EventsHandler, Event } from '../handlers/eventsHandler';
-import axios from 'axios';
 import { Footer } from '../components/Footer';
+import { Header } from '../components/Header';
+import { Loading } from '../components/Loading';
+import { Event } from '../handlers/eventsHandler';
+import { TokenHandler } from '../handlers/tokenHandler';
+import { AxiosRequest } from '../utils/axiosRequests';
+import { LoadingState } from '../utils/enumLoading';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -66,35 +57,26 @@ const useStyles = makeStyles((theme: Theme) =>
     formMonth: {
       marginLeft: '0.5rem',
     },
+    motion: {
+      width: '100%',
+    },
   })
 );
 
 export const DashBoard = () => {
   const [loadingState, setLoadingState] = useState(LoadingState.LOADING);
   const [events, setEvents] = useState<Event[]>();
-  const [exibMonth, setExibMonth] = useState<number>(new Date().getMonth() + 1);
-  const BASE_URL = 'http://localhost:3010';
-  const actualMonth = new Date().getMonth().valueOf();
+  const [exibMonth, setExibMonth] = useState<number>(new Date().getMonth());
   const classes = useStyles();
 
-  async function eventHandler(month: number = actualMonth + 1) {
-    const newEvents = await axios
-      .get<Event[]>(`${BASE_URL}/api/events/user/${month}`, {
-        headers: {
-          authorization: `Bearer ${TokenHandler.getToken()}`,
-        },
-      })
-      .then((res) => res.data);
-    return newEvents;
-  }
-  async function eventMonthHandler(month: number = actualMonth + 1) {
-    const newEvents = await eventHandler(month);
+  async function eventMonthHandler(month: number) {
+    const newEvents = await AxiosRequest.getByMonth(month);
     setEvents(newEvents);
     setExibMonth(month);
   }
   useEffect(() => {
     setTimeout(async () => {
-      const newEvents = await eventHandler();
+      const newEvents = await AxiosRequest.getByMonth();
       setEvents(newEvents);
       setLoadingState(LoadingState.LOADED);
     }, 1000);
@@ -117,18 +99,18 @@ export const DashBoard = () => {
                   onChange={(e) => eventMonthHandler(e.target.value as number)}
                   className={classes.formMonth}
                 >
-                  <MenuItem value={1}>Jan</MenuItem>
-                  <MenuItem value={2}>Fev</MenuItem>
-                  <MenuItem value={3}>Mar</MenuItem>
-                  <MenuItem value={4}>Abr</MenuItem>
-                  <MenuItem value={5}>Mai</MenuItem>
-                  <MenuItem value={6}>Jun</MenuItem>
-                  <MenuItem value={7}>Jul</MenuItem>
-                  <MenuItem value={8}>Ago</MenuItem>
-                  <MenuItem value={9}>Set</MenuItem>
-                  <MenuItem value={10}>Out</MenuItem>
-                  <MenuItem value={11}>Nov</MenuItem>
-                  <MenuItem value={12}>Dez</MenuItem>
+                  <MenuItem value={0}>Jan</MenuItem>
+                  <MenuItem value={1}>Fev</MenuItem>
+                  <MenuItem value={2}>Mar</MenuItem>
+                  <MenuItem value={3}>Abr</MenuItem>
+                  <MenuItem value={4}>Mai</MenuItem>
+                  <MenuItem value={5}>Jun</MenuItem>
+                  <MenuItem value={6}>Jul</MenuItem>
+                  <MenuItem value={7}>Ago</MenuItem>
+                  <MenuItem value={8}>Set</MenuItem>
+                  <MenuItem value={9}>Out</MenuItem>
+                  <MenuItem value={10}>Nov</MenuItem>
+                  <MenuItem value={11}>Dez</MenuItem>
                 </Select>
                 <Box display="flex" flexGrow="1" />
                 <Link

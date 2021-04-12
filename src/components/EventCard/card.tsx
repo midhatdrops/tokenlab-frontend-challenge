@@ -16,6 +16,7 @@ import {
 import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
 import { Event } from '../../handlers/eventsHandler';
+import { motion } from 'framer-motion';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -93,6 +94,12 @@ const useStyles = makeStyles((theme: Theme) =>
         color: '#fff',
       },
     },
+    motion: {
+      width: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
   })
 );
 
@@ -106,39 +113,50 @@ export const IndividualCard: React.FC<Event> = ({
   const treatedFinishTime = new Date(finishTime);
   const classes = useStyles();
   return (
-    <Card className={classes.Card}>
-      <CardHeader
-        title={`Dia ${treatedInitTime.toString().split(' ')[2]}`}
-        avatar={<EventIcon />}
-        className={classes.CardHead}
-      />
-      <CardContent className={classes.CardContent}>
-        <i>Descrição:</i>
-        <Typography className={classes.subTitle} align="justify">
-          {description}
-        </Typography>
-        <i>Início / Fim</i>
-        <Typography variant="body1" align="center" className={classes.typo}>
-          {`${treatedInitTime.getHours()}:${treatedInitTime.getMinutes()} / 
+    <motion.div
+      initial={{ y: -200 }}
+      animate={{ y: 0 }}
+      transition={{ ease: 'easeInOut', duration: 1 }}
+      className={classes.motion}
+    >
+      <Card className={classes.Card}>
+        <CardHeader
+          title={`Dia ${treatedInitTime.toString().split(' ')[2]}`}
+          avatar={<EventIcon />}
+          className={classes.CardHead}
+        />
+        <CardContent className={classes.CardContent}>
+          <i>Descrição:</i>
+          <Typography className={classes.subTitle} align="justify">
+            {description}
+          </Typography>
+          <i>Início / Fim</i>
+          <Typography variant="body1" align="center" className={classes.typo}>
+            {` ${treatedInitTime.getHours()}:${
+              treatedInitTime.getMinutes() === 0
+                ? '00'
+                : treatedInitTime.getMinutes()
+            } / 
           ${treatedFinishTime.getHours()}:${
-            treatedFinishTime.getMinutes() === 0
-              ? '00'
-              : treatedFinishTime.getMinutes()
-          } `}
-        </Typography>
-      </CardContent>
-      <CardActions className={classes.cardActions}>
-        <Link to={`/events/edit?id=${id}`} className={classes.link}>
-          <Button variant="outlined" startIcon={<CreateIcon />}>
-            Editar
-          </Button>
-        </Link>
-        <Link to={`/events/delete?id=${id}`} className={classes.link}>
-          <Button startIcon={<DeleteIcon />} variant="outlined">
-            Excluir
-          </Button>
-        </Link>
-      </CardActions>
-    </Card>
+              treatedFinishTime.getMinutes() === 0
+                ? '00'
+                : treatedFinishTime.getMinutes()
+            } `}
+          </Typography>
+        </CardContent>
+        <CardActions className={classes.cardActions}>
+          <Link to={`/events/edit?id=${id}`} className={classes.link}>
+            <Button variant="outlined" startIcon={<CreateIcon />}>
+              Editar
+            </Button>
+          </Link>
+          <Link to={`/events/delete?id=${id}`} className={classes.link}>
+            <Button startIcon={<DeleteIcon />} variant="outlined">
+              Excluir
+            </Button>
+          </Link>
+        </CardActions>
+      </Card>
+    </motion.div>
   );
 };

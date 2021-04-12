@@ -8,6 +8,7 @@ import { DeleteEventForm } from './Pages/DeleteEvent';
 import { CreateEventForm } from './Pages/CreateEvent';
 import { Logout } from './Pages/Logout';
 import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { NoFoundPage } from './Pages/NoFound';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/events/delete" component={DeleteEventForm} />
         <Route path="/events/create" component={CreateEventForm} />
         <Route path="/logout" component={Logout} />
+        <Route path="*" component={NoFoundPage} />
       </Switch>
     </BrowserRouter>
   );

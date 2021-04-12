@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import { Theme, makeStyles, createStyles } from '@material-ui/core/styles';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import React from 'react';
 import { IndividualCard } from '../EventCard/card';
 import { Event } from '../../handlers/eventsHandler';

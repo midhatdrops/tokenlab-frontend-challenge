@@ -1,23 +1,28 @@
+import DateFnsUtils from '@date-io/date-fns';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { Box, Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
+import {
+  KeyboardDatePicker,
+  KeyboardTimePicker,
+  MuiPickersUtilsProvider,
+} from '@material-ui/pickers';
+import { parseISO } from 'date-fns';
+import { utcToZonedTime } from 'date-fns-tz';
 import React, { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
+import { useHistory } from 'react-router-dom';
+import * as yup from 'yup';
+import { Footer } from '../components/Footer';
 import { Header } from '../components/Header';
 import { TokenHandler } from '../handlers/tokenHandler';
-
-import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
-
-import DateFnsUtils from '@date-io/date-fns';
-import axios from 'axios';
+import { AxiosRequest } from '../utils/axiosRequests';
 import {
-  MuiPickersUtilsProvider,
-  KeyboardTimePicker,
-  KeyboardDatePicker,
-} from '@material-ui/pickers';
-import { Footer } from '../components/Footer';
+  GeneratorFormatDate,
+  validateDate,
+} from '../utils/dateGeneratorAndValidator';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -58,14 +63,6 @@ interface IEditEventForm {
   id: number;
 }
 
-interface Event {
-  id: number;
-  description: string;
-  initTime: Date;
-  finishTime: Date;
-  month: number;
-}
-
 const schema = yup.object().shape({
   description: yup
     .string()
@@ -78,24 +75,12 @@ const schema = yup.object().shape({
 });
 
 export const EditEventForm = () => {
-  const [initDate, setInitDate] = useState<Date | null>(new Date());
-  const [initTime, setInitTime] = useState<Date | null>(new Date());
-  const [finishDate, setFinishDate] = useState<Date | null>(new Date());
-  const [finishTime, setFinishTime] = useState<Date | null>(new Date());
+  const [initDate, setInitDate] = useState<Date>(new Date());
+  const [initTime, setInitTime] = useState<Date>(new Date());
+  const [finishDate, setFinishDate] = useState<Date>(new Date());
+  const [finishTime, setFinishTime] = useState<Date>(new Date());
   const [description, setDescription] = useState<string>();
   const [id, SetId] = useState<number>(1);
-  async function retriveInfos() {
-    const id = window.location.href.split('=')[1];
-    const token = TokenHandler.getToken();
-    const response = await axios
-      .get<Event>(`http://localhost:3010/api/events/${id}`, {
-        headers: {
-          authorization: `Bearer ${token}`,
-        },
-      })
-      .then((res) => res.data);
-    return response;
-  }
 
   const {
     control,
@@ -108,13 +93,14 @@ export const EditEventForm = () => {
 
   useEffect(() => {
     setTimeout(async () => {
-      const response = await retriveInfos();
+      const id = window.location.href.split('=')[1];
+      const response = await AxiosRequest.getEvent(id);
       setInitDate(response.initTime);
       setInitTime(response.initTime);
       setDescription(response.description);
       setFinishTime(response.finishTime);
       setFinishDate(response.finishTime);
-      SetId(response.id);
+      SetId(response.id as number);
       reset({
         description: response.description,
         finishDate: response.finishTime,
@@ -133,41 +119,29 @@ export const EditEventForm = () => {
   ) => {
     e?.preventDefault();
     data.id = id;
-    const month = data.initDate.getMonth() + 1;
-    const initDate = new Date(data.initDate).toISOString().split('T')[0];
-    const initTime = new Date(data.initTime).toISOString().split('T')[1];
-    const DateTime = new Date(`${initDate} ${initTime}`);
-
-    const finishDate = new Date(data.finishDate).toISOString().split('T')[0];
-    const finishTime = new Date(data.finishTime).toISOString().split('T')[1];
-    const FinishTime = new Date(`${finishDate} ${finishTime}`);
-
-    if (
-      DateTime.getTime() == FinishTime.getTime() ||
-      DateTime.getTime() >= FinishTime.getTime()
-    ) {
-      return alert(
-        'Data de fim deve ser maior ou diferente do que a de início '
-      );
+    const month = data.initDate.getMonth();
+    const InitDateTime = new GeneratorFormatDate(
+      data.initDate,
+      data.initTime
+    ).execute();
+    const FinishDateTime = new GeneratorFormatDate(
+      data.finishDate,
+      data.finishTime
+    ).execute();
+    const validation = validateDate(InitDateTime, FinishDateTime);
+    if (!validation) {
+      return (window.location.href = `http://localhost:3000/events/edit?id=${data.id}`);
     }
-
-    const token = TokenHandler.getToken();
-    const responseStatus = await axios
-      .put(
-        `http://localhost:3010/api/events/${data.id}`,
-        {
-          description: data.description,
-          initTime: DateTime.toISOString(),
-          finishTime: FinishTime.toISOString(),
-          month,
-        },
-        {
-          headers: {
-            authorization: `Bearer ${token}`,
-          },
-        }
-      )
-      .then((res) => res.status);
+    const responseStatus = await AxiosRequest.put(
+      {
+        description: data.description,
+        initTime: InitDateTime,
+        finishTime: FinishDateTime,
+        month,
+        id: data.id,
+      },
+      data.id
+    );
     if (responseStatus === 200) {
       alert('evento Modificado');
       window.location.href = 'http://localhost:3000/dashboard';
@@ -177,164 +151,173 @@ export const EditEventForm = () => {
   };
   const classes = useStyles();
   return (
-    <Box width="100vw" height="100vh" overflow="hidden">
-      <Grid container className={classes.root}>
-        <Header />
-      </Grid>
-      <Box
-        width="100%"
-        height="calc(100vh - 45px)"
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-      >
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className={classes.formControl}
-          method="POST"
+    <>
+      {TokenHandler.tokenValidation() ? true : useHistory().push('/')}
+      <Box width="100vw" height="100vh" overflow="hidden">
+        <Grid container className={classes.root}>
+          <Header />
+        </Grid>
+        <Box
+          width="100%"
+          height="calc(100vh - 45px)"
+          display="flex"
+          flexDirection="column"
+          alignItems="center"
+          justifyContent="center"
         >
-          <Controller
-            name="description"
-            control={control}
-            defaultValue={description}
-            render={({ field }) => (
-              <TextField
-                onChange={(text) => {
-                  field.onChange(text);
-                }}
-                rows={2}
-                error={errors.description?.message ? true : false}
-                helperText={errors.description?.message}
-                multiline
-                rowsMax={5}
-                label="Description"
-                className={classes.formInput}
-                placeholder={description as string}
-              />
-            )}
-          />
-          <Controller
-            name="initDate"
-            control={control}
-            defaultValue={initDate}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardDatePicker
-                  {...field}
-                  disableToolbar
-                  variant="inline"
-                  format="yyyy-MM-dd"
-                  margin="normal"
-                  error={errors.initDate?.message ? true : false}
-                  helperText={errors.initDate?.message}
-                  label=" Init Date Picker"
-                  className={classes.formDate}
-                  value={initDate}
-                  onChange={(date) => {
-                    setInitDate(date);
-                    field.onChange(date);
-                  }}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change date',
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-            )}
-          />
-          <Controller
-            name="initTime"
-            control={control}
-            defaultValue={initTime}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardTimePicker
-                  {...field}
-                  margin="normal"
-                  label="Init Time picker"
-                  value={initTime}
-                  error={errors.initTime?.message ? true : false}
-                  helperText={errors.initTime?.message}
-                  className={classes.formDate}
-                  onChange={(date) => {
-                    setInitTime(date);
-                    field.onChange(date);
-                  }}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change time',
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-            )}
-          />
-          <Controller
-            name="finishDate"
-            control={control}
-            defaultValue={finishDate}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardDatePicker
-                  // {...field}
-                  disableToolbar
-                  variant="inline"
-                  format="yyyy-MM-dd"
-                  margin="normal"
-                  error={errors.finishDate?.message ? true : false}
-                  helperText={errors.finishDate?.message}
-                  label=" Finish Date Picker"
-                  className={classes.formDate}
-                  value={finishDate}
-                  onChange={(date) => {
-                    setFinishDate(date);
-                    field.onChange(date);
-                  }}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change date',
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-            )}
-          />
-          <Controller
-            name="finishTime"
-            control={control}
-            defaultValue={finishTime}
-            rules={{ required: true }}
-            render={({ field }) => (
-              <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                <KeyboardTimePicker
-                  // {...field}
-                  margin="normal"
-                  label="Finish Time picker"
-                  value={finishTime}
-                  error={errors.finishTime?.message ? true : false}
-                  helperText={errors.finishTime?.message}
-                  className={classes.formDate}
-                  onChange={(date) => {
-                    setFinishTime(date);
-                    field.onChange(date);
-                  }}
-                  KeyboardButtonProps={{
-                    'aria-label': 'change time',
-                  }}
-                />
-              </MuiPickersUtilsProvider>
-            )}
-          />
-          <br />
-          <Button
-            variant="outlined"
-            type="submit"
-            className={classes.formButton}
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className={classes.formControl}
+            method="POST"
           >
-            Edit
-          </Button>
-        </form>
+            <Controller
+              name="description"
+              control={control}
+              defaultValue={description}
+              render={({ field }) => (
+                <TextField
+                  onChange={(text) => {
+                    field.onChange(text);
+                  }}
+                  rows={2}
+                  error={errors.description?.message ? true : false}
+                  helperText={errors.description?.message}
+                  multiline
+                  rowsMax={5}
+                  label="Description"
+                  className={classes.formInput}
+                  placeholder={description as string}
+                />
+              )}
+            />
+            <Controller
+              name="initDate"
+              control={control}
+              defaultValue={initDate}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <KeyboardDatePicker
+                    {...field}
+                    disableToolbar
+                    variant="inline"
+                    format="yyyy-MM-dd"
+                    margin="normal"
+                    error={errors.initDate?.message ? true : false}
+                    helperText={errors.initDate?.message}
+                    label=" Init Date Picker"
+                    className={classes.formDate}
+                    value={parseISO(new Date(initDate).toISOString())}
+                    onChange={(date) => {
+                      setInitDate(date);
+                      field.onChange(date);
+                    }}
+                    KeyboardButtonProps={{
+                      'aria-label': 'change date',
+                    }}
+                  />
+                </MuiPickersUtilsProvider>
+              )}
+            />
+            <Controller
+              name="initTime"
+              control={control}
+              defaultValue={initTime}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <KeyboardTimePicker
+                    {...field}
+                    margin="normal"
+                    label="Init Time picker"
+                    value={parseISO(new Date(initTime).toISOString())}
+                    error={errors.initTime?.message ? true : false}
+                    helperText={errors.initTime?.message}
+                    className={classes.formDate}
+                    ampm={false}
+                    onChange={(date) => {
+                      const timezone = 'America/Sao_Paulo';
+                      const zoneDate = utcToZonedTime(date, timezone);
+                      setInitTime(zoneDate);
+                      field.onChange(date);
+                    }}
+                    KeyboardButtonProps={{
+                      'aria-label': 'change time',
+                    }}
+                  />
+                </MuiPickersUtilsProvider>
+              )}
+            />
+            <Controller
+              name="finishDate"
+              control={control}
+              defaultValue={finishDate}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <KeyboardDatePicker
+                    // {...field}
+                    disableToolbar
+                    variant="inline"
+                    format="yyyy-MM-dd"
+                    margin="normal"
+                    error={errors.finishDate?.message ? true : false}
+                    helperText={errors.finishDate?.message}
+                    label=" Finish Date Picker"
+                    className={classes.formDate}
+                    value={parseISO(new Date(finishDate).toISOString())}
+                    onChange={(date) => {
+                      setFinishDate(date);
+                      field.onChange(date);
+                    }}
+                    KeyboardButtonProps={{
+                      'aria-label': 'change date',
+                    }}
+                  />
+                </MuiPickersUtilsProvider>
+              )}
+            />
+            <Controller
+              name="finishTime"
+              control={control}
+              defaultValue={finishTime}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                  <KeyboardTimePicker
+                    // {...field}
+                    margin="normal"
+                    label="Finish Time picker"
+                    value={parseISO(new Date(finishTime).toISOString())}
+                    error={errors.finishTime?.message ? true : false}
+                    helperText={errors.finishTime?.message}
+                    className={classes.formDate}
+                    ampm={false}
+                    onChange={(date) => {
+                      const timezone = 'America/Sao_Paulo';
+                      const zoneDate = utcToZonedTime(date, timezone);
+                      setFinishTime(zoneDate);
+                      field.onChange(date);
+                    }}
+                    KeyboardButtonProps={{
+                      'aria-label': 'change time',
+                    }}
+                  />
+                </MuiPickersUtilsProvider>
+              )}
+            />
+            <br />
+            <Button
+              variant="outlined"
+              type="submit"
+              className={classes.formButton}
+            >
+              Edit
+            </Button>
+          </form>
+        </Box>
+        <Footer />
       </Box>
-      <Footer />
-    </Box>
+    </>
   );
 };
