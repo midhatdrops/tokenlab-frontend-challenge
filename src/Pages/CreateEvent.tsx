@@ -6,8 +6,9 @@ import React, { useEffect, useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { Header } from '../components/Header';
 import { TokenHandler } from '../handlers/tokenHandler';
-// import { registerHandler } from '../handlers/registerHandler';
-// import { useHistory } from 'react-router';
+
+import * as yup from 'yup';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 import DateFnsUtils from '@date-io/date-fns';
 import axios from 'axios';
@@ -53,38 +54,51 @@ interface ICreateEventForm {
   finishDate: Date;
   finishTime: Date;
   description: string;
-  id: number;
 }
 
-interface Event {
-  id: number;
-  description: string;
-  initTime: Date;
-  finishTime: Date;
-}
+const schema = yup.object().shape({
+  description: yup
+    .string()
+    .required()
+    .min(2),
+  initDate: yup.date().required(),
+  initTime: yup.date().required(),
+  finishDate: yup.date().required(),
+  finishTime: yup.date().required(),
+});
 
 export const CreateEventForm = () => {
-  const [initDate, setInitDate] = useState<Date | null>(new Date());
-  const [initTime, setInitTime] = useState<Date | null>(new Date());
-  const [finishDate, setFinishDate] = useState<Date | null>(new Date());
-  const [finishTime, setFinishTime] = useState<Date | null>(new Date());
+  const [initDate, setInitDate] = useState<Date>(new Date());
+  const [initTime, setInitTime] = useState<Date>(new Date());
+  const [finishDate, setFinishDate] = useState<Date>(new Date());
+  const [finishTime, setFinishTime] = useState<Date>(new Date());
   const [description, setDescription] = useState<string>();
-  const [id, SetId] = useState<number>(1);
-  const { control, handleSubmit } = useForm<ICreateEventForm>();
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ICreateEventForm>({
+    resolver: yupResolver(schema),
+  });
   const onSubmit: SubmitHandler<ICreateEventForm> = async (
     data: ICreateEventForm,
     e
   ) => {
     e?.preventDefault();
-    data.id = id;
     const token = TokenHandler.getToken();
-    const initDate = data.initDate.toISOString().split('T')[0];
-    const initTime = data.initTime.toISOString().split('T')[1];
-    const InitDateTime = new Date(`${initDate} ${initTime}`);
+    const controlInitDate = data.initDate.toISOString().split('T')[0];
+    const controlInitTime = data.initTime.toISOString().split('T')[1];
+    const InitDateTime = new Date(`${controlInitDate} ${controlInitTime}`);
 
-    const finishDate = data.initDate.toISOString().split('T')[0];
-    const finishTime = data.initTime.toISOString().split('T')[1];
-    const InitFinishTime = new Date(`${finishDate} ${finishTime}`);
+    const controlFinishDate = data.finishDate.toISOString().split('T')[0];
+    const controlFinishTime = data.finishTime.toISOString().split('T')[1];
+    const InitFinishTime = new Date(
+      `${controlFinishDate} ${controlFinishTime}`
+    );
+
+    console.log(InitDateTime);
+    console.log(InitFinishTime);
 
     if (
       InitDateTime.getTime() == InitFinishTime.getTime() ||
@@ -144,8 +158,11 @@ export const CreateEventForm = () => {
               <TextField
                 onChange={(text) => {
                   field.onChange(text);
+                  setDescription(text.target.value);
                 }}
                 rows={2}
+                error={errors.description?.message ? true : false}
+                helperText={errors.description?.message}
                 multiline
                 rowsMax={5}
                 label="Description"
@@ -157,7 +174,6 @@ export const CreateEventForm = () => {
           <Controller
             name="initDate"
             control={control}
-            defaultValue={initDate}
             rules={{ required: true }}
             render={({ field }) => (
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -168,6 +184,8 @@ export const CreateEventForm = () => {
                   format="yyyy-MM-dd"
                   margin="normal"
                   label="Init Date Picker"
+                  error={errors.initDate?.message ? true : false}
+                  helperText={errors.initDate?.message}
                   className={classes.formDate}
                   value={initDate}
                   onChange={(date) => {
@@ -184,7 +202,6 @@ export const CreateEventForm = () => {
           <Controller
             name="initTime"
             control={control}
-            defaultValue={initTime}
             rules={{ required: true }}
             render={({ field }) => (
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -193,6 +210,8 @@ export const CreateEventForm = () => {
                   margin="normal"
                   label=" Init Time picker"
                   value={initTime}
+                  error={errors.initTime?.message ? true : false}
+                  helperText={errors.initTime?.message}
                   className={classes.formDate}
                   onChange={(date) => {
                     setInitTime(date);
@@ -208,7 +227,6 @@ export const CreateEventForm = () => {
           <Controller
             name="finishDate"
             control={control}
-            defaultValue={finishDate}
             rules={{ required: true }}
             render={({ field }) => (
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -219,6 +237,8 @@ export const CreateEventForm = () => {
                   format="yyyy-MM-dd"
                   margin="normal"
                   label="Finish Date Picker"
+                  error={errors.finishDate?.message ? true : false}
+                  helperText={errors.finishDate?.message}
                   className={classes.formDate}
                   value={finishDate}
                   onChange={(date) => {
@@ -235,7 +255,6 @@ export const CreateEventForm = () => {
           <Controller
             name="finishTime"
             control={control}
-            defaultValue={finishTime}
             rules={{ required: true }}
             render={({ field }) => (
               <MuiPickersUtilsProvider utils={DateFnsUtils}>
@@ -244,6 +263,8 @@ export const CreateEventForm = () => {
                   margin="normal"
                   label=" Finish Time picker"
                   value={finishTime}
+                  error={errors.finishTime?.message ? true : false}
+                  helperText={errors.finishTime?.message}
                   className={classes.formDate}
                   onChange={(date) => {
                     setFinishTime(date);

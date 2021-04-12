@@ -64,6 +64,17 @@ interface Event {
   finishTime: Date;
 }
 
+const schema = yup.object().shape({
+  description: yup
+    .string()
+    .required()
+    .min(2),
+  initDate: yup.date().required(),
+  initTime: yup.date().required(),
+  finishDate: yup.date().required(),
+  finishTime: yup.date().required(),
+});
+
 export const EditEventForm = () => {
   const [initDate, setInitDate] = useState<Date | null>(new Date());
   const [initTime, setInitTime] = useState<Date | null>(new Date());
@@ -89,7 +100,9 @@ export const EditEventForm = () => {
     handleSubmit,
     formState: { errors },
     reset,
-  } = useForm<IEditEventForm>();
+  } = useForm<IEditEventForm>({
+    resolver: yupResolver(schema),
+  });
 
   useEffect(() => {
     setTimeout(async () => {
@@ -117,9 +130,6 @@ export const EditEventForm = () => {
   ) => {
     e?.preventDefault();
     data.id = id;
-    console.log(data.initDate);
-    console.log(data.finishDate);
-    console.log(data.description);
     const initDate = new Date(data.initDate).toISOString().split('T')[0];
     const initTime = new Date(data.initTime).toISOString().split('T')[1];
     const DateTime = new Date(`${initDate} ${initTime}`);
@@ -189,6 +199,8 @@ export const EditEventForm = () => {
                   field.onChange(text);
                 }}
                 rows={2}
+                error={errors.description?.message ? true : false}
+                helperText={errors.description?.message}
                 multiline
                 rowsMax={5}
                 label="Description"
@@ -210,6 +222,8 @@ export const EditEventForm = () => {
                   variant="inline"
                   format="yyyy-MM-dd"
                   margin="normal"
+                  error={errors.initDate?.message ? true : false}
+                  helperText={errors.initDate?.message}
                   label=" Init Date Picker"
                   className={classes.formDate}
                   value={initDate}
@@ -236,6 +250,8 @@ export const EditEventForm = () => {
                   margin="normal"
                   label="Init Time picker"
                   value={initTime}
+                  error={errors.initTime?.message ? true : false}
+                  helperText={errors.initTime?.message}
                   className={classes.formDate}
                   onChange={(date) => {
                     setInitTime(date);
@@ -261,6 +277,8 @@ export const EditEventForm = () => {
                   variant="inline"
                   format="yyyy-MM-dd"
                   margin="normal"
+                  error={errors.finishDate?.message ? true : false}
+                  helperText={errors.finishDate?.message}
                   label=" Finish Date Picker"
                   className={classes.formDate}
                   value={finishDate}
@@ -287,6 +305,8 @@ export const EditEventForm = () => {
                   margin="normal"
                   label="Finish Time picker"
                   value={finishTime}
+                  error={errors.finishTime?.message ? true : false}
+                  helperText={errors.finishTime?.message}
                   className={classes.formDate}
                   onChange={(date) => {
                     setFinishTime(date);

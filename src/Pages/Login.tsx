@@ -1,6 +1,7 @@
 import { Box, Grid } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { Link } from 'react-router-dom';
 import TextField from '@material-ui/core/TextField';
 import React, { useState } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
@@ -31,6 +32,13 @@ const useStyles = makeStyles((theme: Theme) =>
     formInput: {
       marginTop: '1rem',
       textAlign: 'center',
+    },
+    link: {
+      color: '#fff',
+      textDecoration: 'none',
+      '&:visited': {
+        color: '#fff',
+      },
     },
   })
 );
@@ -126,6 +134,15 @@ export const LoginForm = () => {
               Login
             </Button>
           </form>
+          <Link to="/user/register" className={classes.link}>
+            <Button
+              variant="outlined"
+              type="submit"
+              className={classes.formButton}
+            >
+              Registrar
+            </Button>
+          </Link>
         </Box>
       </Box>
     </>

@@ -15,7 +15,7 @@ function App() {
       <Switch>
         <Route exact path="/" component={Homepage} />
         <Route path="/dashboard" component={DashBoard} />
-        <Route path="/register" component={RegisterForm} />
+        <Route path="/user/register" component={RegisterForm} />
         <Route path="/events/edit" component={EditEventForm} />
         <Route path="/events/delete" component={DeleteEventForm} />
         <Route path="/events/create" component={CreateEventForm} />

@@ -65,7 +65,7 @@ export const DashBoard = () => {
   const classes = useStyles();
   async function eventHandler() {
     const newEvents = await axios
-      .get<Event[]>(`${BASE_URL}/api/events/user`, {
+      .get<Event[]>(`${BASE_URL}/api/events/user?month=${actualMonth}`, {
         headers: {
           authorization: `Bearer ${TokenHandler.getToken()}`,
         },
