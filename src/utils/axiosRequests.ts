@@ -2,11 +2,11 @@ import axios from 'axios';
 import { TokenHandler } from '../handlers/tokenHandler';
 import { Event } from './eventInterface';
 
-const token = TokenHandler.getToken();
 const BASE_URL = `http://localhost:3010`;
 const actualMonth = new Date().getMonth().valueOf();
 export const AxiosRequest = {
   post: async (event: Event) => {
+    const token = TokenHandler.getToken();
     const status = await axios
       .post(
         `${BASE_URL}/api/events`,
@@ -26,6 +26,7 @@ export const AxiosRequest = {
     return status;
   },
   put: async (event: Event, id: number) => {
+    const token = TokenHandler.getToken();
     const status = await axios
       .put(
         `${BASE_URL}/api/events/${id}`,
@@ -45,6 +46,7 @@ export const AxiosRequest = {
     return status;
   },
   delete: async (id: number) => {
+    const token = TokenHandler.getToken();
     const response = await axios
       .delete(`${BASE_URL}/api/events/${id}`, {
         headers: {
@@ -55,6 +57,7 @@ export const AxiosRequest = {
     return response;
   },
   getByMonth: async (month: number = actualMonth) => {
+    const token = TokenHandler.getToken();
     const events = await axios
       .get<Event[]>(`${BASE_URL}/api/events/user/${month}`, {
         headers: {
@@ -65,6 +68,7 @@ export const AxiosRequest = {
     return events;
   },
   getEvent: async (id: string) => {
+    const token = TokenHandler.getToken();
     const event = await axios
       .get<Event>(`${BASE_URL}/api/events/${id}`, {
         headers: {
